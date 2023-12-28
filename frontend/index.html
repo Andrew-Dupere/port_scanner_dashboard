@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NGINX Log Viewer</title>
+    <style>
+        body {
+            background-color: #1b5e20; /* Softer green background */
+            margin: 40px; /* Moderately sized margins */
+            font-family: 'Arial', sans-serif;
+            color: #f1f1f1; /* Light grey text for readability */
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+            text-shadow: 2px 2px 4px #000000;
+            color: #ffeb3b; /* Yellow text for contrast */
+        }
+        .metrics-box {
+            border: 2px solid #ffeb3b; /* Yellow border for contrast */
+            border-radius: 10px;
+            margin-top: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+        .metrics-box:hover {
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            color: #f1f1f1; /* Light grey text for table cells */
+        }
+        th {
+            background-color: #1b5e20; /* Background color same as body */
+            color: #ffeb3b; /* Yellow text for table headers */
+        }
+    </style>
+
+        
+</head>
+<body>
+    <h1>NGINX Log Viewer</h1>
+    <div id="logTable">
+        <!-- Table will be populated here by JavaScript -->
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableDiv = document.getElementById('logTable');
+        
+            fetch('http://18.118.218.230:8080/metrics')
+                .then(response => response.json())
+                .then(data => {
+                    if (!Array.isArray(data)) {
+                        console.error('Data is not an array:', data);
+                        tableDiv.innerHTML = '<p>Error: Data is not an array</p>';
+                        return;
+                    }
+        
+                    // Sort the data by timestamp in descending order
+                    data.sort((a, b) => new Date(b.time) - new Date(a.time));
+        
+                    let tableContent = '<table><tr><th>IP Address</th><th>Timestamp</th><th>Status Code</th><th>City</th><th>Country</th><th>User-Agent</th></tr>';
+        
+                    data.forEach(item => {
+                        // Display the raw timestamp from the nginx log with everything after the '+'
+                        let rawTimestamp = item.time.split('+')[0].trim();
+        
+                        tableContent += `<tr><td>${item.ip}</td><td>${rawTimestamp}</td><td>${item.status}</td><td>${item.city || 'N/A'}</td><td>${item.country || 'N/A'}</td><td>${item.user_agent}</td></tr>`;
+                    });
+        
+                    tableContent += '</table>';
+                    tableDiv.innerHTML = tableContent;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    tableDiv.innerHTML = `<p>Error loading data: ${error}</p>`;
+                });
+        });
+    </script>   
+    
+    
+       
+    
+
+</body>
+</html>
+
+
+
+
